@@ -1,71 +1,73 @@
-import requests
-import json
-from oauth2client.service_account import ServiceAccountCredentials
 import os
+import json
+import requests
+from oauth2client.service_account import ServiceAccountCredentials
+from datetime import datetime
 
-# GitHub Secretsから認証情報を取得
+# 1. GitHub SecretsからGOOGLE_API_CREDENTIALS（Google Sheets APIの認証情報）を取得
 google_credentials_json = os.getenv('GOOGLE_API_CREDENTIALS')
 
-# JSON文字列を辞書に変換
+# 2. JSON文字列を辞書に変換
 google_credentials = json.loads(google_credentials_json)
 
-# 認証情報を使ってGoogle Sheets APIにアクセス
+# 3. Google Sheets APIにアクセスするための認証情報を設定
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(
     google_credentials,
     scopes=['https://www.googleapis.com/auth/spreadsheets']
 )
-# --- X API情報 ---
-BEARER_TOKEN = "YOUR_BEARER_TOKEN"  # XのAPIキー（Bearer Token）をここに入れます
-USER_ID = "1842515820163043328"  # XのユーザーIDをここに入れます
 
-def get_impression_count():
-    """X APIからインプレッション数を取得"""
-    url = f"https://api.twitter.com/2/users/{USER_ID}/tweets"
-    headers = {"Authorization": f"Bearer {BEARER_TOKEN}"}
-    response = requests.get(url, headers=headers)
-    
-    if response.status_code != 200:
-        print(f"Error: {response.status_code}")
-        return None
-    
-    data = response.json()
-    impressions = sum(tweet["public_metrics"]["impression_count"] for tweet in data["data"])
-    return impressions
+# 4. X APIからインプレッション数を取得
+X_BEARER_TOKEN = os.getenv('X_BEARER_TOKEN')
+USER_ID = 'your_user_id'  # あなたのXアカウントIDに置き換えてください
+url = f'https://api.twitter.com/2/users/{USER_ID}/tweets'
 
-if __name__ == "__main__":
-    # インプレッション数を取得して表示（動作確認用）
-    impressions = get_impression_count()
-    print(f"Today's Impressions: {impressions}")
-import tweepy
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-import os
+headers = {
+    'Authorization': f'Bearer {X_BEARER_TOKEN}',
+}
 
-# X APIの認証情報（Bearer Token）
-BEARER_TOKEN = os.getenv('BEARER_TOKEN')  # GitHub Secretsから取得
+params = {
+    'max_results': 5,  # 最新5件のツイートを取得（任意の件数に変更可）
+}
 
-# Google Sheets APIの認証情報
-GOOGLE_API_CREDENTIALS = os.getenv('GOOGLE_API_CREDENTIALS')  # GitHub Secretsから取得
-SHEET_ID = os.getenv('GOOGLE_SHEET_ID')  # GitHub Secretsから取得
+response = requests.get(url, headers=headers, params=params)
+data = response.json()
 
-# X APIクライアントの設定
-client = tweepy.Client(bearer_token=BEARER_TOKEN)
+# インプレッション数の取得（仮に最後のツイートのインプレッション数を取得）
+impressions = 0
+for tweet in data.get('data', []):
+    tweet_id = tweet['id']
+    tweet_url = f'https://api.twitter.com/2/tweets/{tweet_id}'
+    tweet_response = requests.get(tweet_url, headers=headers)
+    tweet_data = tweet_response.json()
+    impressions += tweet_data.get('data', {}).get('public_metrics', {}).get('impression_count', 0)
 
-# Google Sheetsの認証設定
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-credentials = ServiceAccountCredentials.from_json_keyfile_dict(
-    GOOGLE_API_CREDENTIALS, scope)
-client_gspread = gspread.authorize(credentials)
+# 5. GitHub SecretsからスプレッドシートIDを取得
+SPREADSHEET_ID = os.getenv('SPREADSHEET_ID')  # GitHub Secretsに保存されたスプレッドシートIDを取得
+RANGE_NAME = 'X分析シート!A1'  # データを入力するセル範囲に合わせてください
 
-# Googleスプレッドシートの取得
-sheet = client_gspread.open_by_key(SHEET_ID).sheet1  # 1番目のシートを選択
+# 今日の日付を取得
+today_date = datetime.now().strftime('%Y-%m-%d')
 
-# Xのアカウント情報を使ってインプレッション数を取得
-user_id = 'USER_ID'  # 自分のXアカウントのIDを設定
-tweets = client.get_users_tweets(user_id, tweet_fields=["public_metrics"])
+# 6. インプレッションデータを設定
+data_to_update = {
+    'values': [
+        ['Date', 'Impressions'],
+        [today_date, impressions],  # 今日の日付とインプレッション数をセット
+    ]
+}
 
-# 最も最近のツイートのインプレッション数を取得
-for tweet in tweets.data:
-    impressions = tweet.public_metrics['impression_count']
-    # Googleスプレッドシートにインプレッション数を反映
-    sheet.append_row([tweet.id, impressions])
+# 7. Google Sheets APIを使ってスプレッドシートにデータを更新するリクエストを送る
+url = f'https://sheets.googleapis.com/v4/spreadsheets/{SPREADSHEET_ID}/values/{RANGE_NAME}?valueInputOption=RAW'
+headers = {
+    'Authorization': f'Bearer {credentials.get_access_token().access_token}',
+    'Content-Type': 'application/json'
+}
+
+# 8. リクエストを送信して、結果を確認
+response = requests.put(url, headers=headers, json=data_to_update)
+
+# 9. レスポンスを確認して、更新が成功したか確認
+if response.status_code == 200:
+    print("Data updated successfully!")
+else:
+    print(f"Error updating data: {response.status_code} - {response.text}")

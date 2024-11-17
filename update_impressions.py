@@ -18,7 +18,7 @@ credentials = ServiceAccountCredentials.from_json_keyfile_dict(
 
 # 4. X APIからインプレッション数を取得
 X_BEARER_TOKEN = os.getenv('X_BEARER_TOKEN')
-USER_ID = 'your_user_id'  # あなたのXアカウントIDに置き換えてください
+USER_ID = '1842515820163043328'  # あなたのXアカウントIDに置き換えてください
 url = f'https://api.twitter.com/2/users/{USER_ID}/tweets'
 
 headers = {

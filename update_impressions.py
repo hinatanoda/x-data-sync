@@ -26,7 +26,7 @@ client_gspread = gspread.authorize(credentials)
 sheet = client_gspread.open_by_key(SHEET_ID).sheet1  # 1番目のシートを選択
 
 # Xのアカウント情報を使ってインプレッション数を取得
-user_id = '1842515820163043328'  # 自分のXアカウントのIDを設定
+user_id = client.get_user(username='waav_king')  # 自分のXアカウントのIDを設定
 tweets = client.get_users_tweets(user_id, tweet_fields=["public_metrics"])
 
 # 最も最近のツイートのインプレッション数を取得

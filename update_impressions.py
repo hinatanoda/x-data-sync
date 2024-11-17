@@ -1,33 +1,25 @@
 import tweepy
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials  # oauth2clientからgoogle.oauth2に変更
 import os
 import json
-from oauth2client.service_account import ServiceAccountCredentials
-import os
 
 # 環境変数からGoogle Sheetsの認証情報を取得
-google_credentials = json.loads(os.getenv('GOOGLE_API_CREDENTIALS'))
+google_credentials = json.loads(os.getenv('GOOGLE_API_CREDENTIALS'))  # JSON文字列を辞書に変換
 
 # 認証情報を使ってGoogle Sheets APIにアクセス
-credentials = ServiceAccountCredentials.from_json_keyfile_dict(
-    google_credentials,
-    scopes=['https://www.googleapis.com/auth/spreadsheets']
-)
+credentials = Credentials.from_service_account_info(google_credentials, scopes=['https://www.googleapis.com/auth/spreadsheets'])
+
 # X APIの認証情報（Bearer Token）
 BEARER_TOKEN = os.getenv('BEARER_TOKEN')  # GitHub Secretsから取得
 
 # Google Sheets APIの認証情報
-GOOGLE_API_CREDENTIALS = os.getenv('GOOGLE_API_CREDENTIALS')  # GitHub Secretsから取得
 SHEET_ID = os.getenv('GOOGLE_SHEET_ID')  # GitHub Secretsから取得
 
 # X APIクライアントの設定
 client = tweepy.Client(bearer_token=BEARER_TOKEN)
 
 # Google Sheetsの認証設定
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-credentials = ServiceAccountCredentials.from_json_keyfile_dict(
-    GOOGLE_API_CREDENTIALS, scope)
 client_gspread = gspread.authorize(credentials)
 
 # Googleスプレッドシートの取得

@@ -2,7 +2,18 @@ import tweepy
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import os
+import json
+from oauth2client.service_account import ServiceAccountCredentials
+import os
 
+# 環境変数からGoogle Sheetsの認証情報を取得
+google_credentials = json.loads(os.getenv('GOOGLE_API_CREDENTIALS'))
+
+# 認証情報を使ってGoogle Sheets APIにアクセス
+credentials = ServiceAccountCredentials.from_json_keyfile_dict(
+    google_credentials,
+    scopes=['https://www.googleapis.com/auth/spreadsheets']
+)
 # X APIの認証情報（Bearer Token）
 BEARER_TOKEN = os.getenv('BEARER_TOKEN')  # GitHub Secretsから取得
 

@@ -1,11 +1,11 @@
 import requests
 
 # --- X API情報 ---
-BEARER_TOKEN = "YOUR_BEARER_TOKEN"  # Bearer Tokenを入力
-USER_ID = "YOUR_USER_ID"  # XのアカウントID（後で設定）
+BEARER_TOKEN = "YOUR_BEARER_TOKEN"  # XのAPIキー（Bearer Token）をここに入れます
+USER_ID = "YOUR_USER_ID"  # XのユーザーIDをここに入れます
 
 def get_impression_count():
-    """X APIからインプレッションデータを取得"""
+    """X APIからインプレッション数を取得"""
     url = f"https://api.twitter.com/2/users/{USER_ID}/tweets"
     headers = {"Authorization": f"Bearer {BEARER_TOKEN}"}
     response = requests.get(url, headers=headers)

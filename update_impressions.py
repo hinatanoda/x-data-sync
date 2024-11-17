@@ -16,7 +16,7 @@ credentials = ServiceAccountCredentials.from_json_keyfile_dict(
 )
 # --- X API情報 ---
 BEARER_TOKEN = "YOUR_BEARER_TOKEN"  # XのAPIキー（Bearer Token）をここに入れます
-USER_ID = "YOUR_USER_ID"  # XのユーザーIDをここに入れます
+USER_ID = "1842515820163043328"  # XのユーザーIDをここに入れます
 
 def get_impression_count():
     """X APIからインプレッション数を取得"""
@@ -61,7 +61,7 @@ client_gspread = gspread.authorize(credentials)
 sheet = client_gspread.open_by_key(SHEET_ID).sheet1  # 1番目のシートを選択
 
 # Xのアカウント情報を使ってインプレッション数を取得
-user_id = '1842515820163043328'  # 自分のXアカウントのIDを設定
+user_id = 'USER_ID'  # 自分のXアカウントのIDを設定
 tweets = client.get_users_tweets(user_id, tweet_fields=["public_metrics"])
 
 # 最も最近のツイートのインプレッション数を取得

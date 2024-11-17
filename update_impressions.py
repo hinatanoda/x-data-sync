@@ -3,15 +3,17 @@ import json
 from oauth2client.service_account import ServiceAccountCredentials
 import os
 
-# 環境変数からGoogle Sheetsの認証情報を取得
-google_credentials = json.loads(os.getenv('GOOGLE_API_CREDENTIALS'))
+# GitHub Secretsから認証情報を取得
+google_credentials_json = os.getenv('GOOGLE_API_CREDENTIALS')
+
+# JSON文字列を辞書に変換
+google_credentials = json.loads(google_credentials_json)
 
 # 認証情報を使ってGoogle Sheets APIにアクセス
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(
     google_credentials,
     scopes=['https://www.googleapis.com/auth/spreadsheets']
 )
-
 # --- X API情報 ---
 BEARER_TOKEN = "YOUR_BEARER_TOKEN"  # XのAPIキー（Bearer Token）をここに入れます
 USER_ID = "YOUR_USER_ID"  # XのユーザーIDをここに入れます

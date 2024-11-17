@@ -3,3 +3,6 @@ google-auth
 google-auth-oauthlib
 google-auth-httplib2
 google-api-python-client
+tweepy==4.13.0  # X APIにアクセスするためのライブラリ
+gspread==5.7.0  # Google Sheets APIにアクセスするためのライブラリ
+oauth2client==4.1.3  # Google Sheets APIの認証に必要なライブラリ

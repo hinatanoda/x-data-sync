@@ -26,11 +26,21 @@ client_gspread = gspread.authorize(credentials)
 sheet = client_gspread.open_by_key(SHEET_ID).sheet1  # 1番目のシートを選択
 
 # Xのアカウント情報を使ってインプレッション数を取得
-user_id = client.get_user(username='waav_king')  # 自分のXアカウントのIDを設定
+username = 'waav_king'  # 自分のXアカウントのユーザー名
+user = client.get_user(username=username)  # ユーザー情報を取得
+user_id = user.id  # 正しいuser_idを取得
+
+# Xのアカウント情報を使ってインプレッション数を取得
 tweets = client.get_users_tweets(user_id, tweet_fields=["public_metrics"])
 
+# レスポンスを確認
+print(f"API Response: {tweets}")
+
 # 最も最近のツイートのインプレッション数を取得
-for tweet in tweets.data:
-    impressions = tweet.public_metrics['impression_count']
-    # Googleスプレッドシートにインプレッション数を反映
-    sheet.append_row([tweet.id, impressions])
+if tweets.data is not None:
+    for tweet in tweets.data:
+        impressions = tweet.public_metrics['impression_count']
+        # Googleスプレッドシートにインプレッション数を反映
+        sheet.append_row([tweet.id, impressions])
+else:
+    print("No tweets found or error in API response.")

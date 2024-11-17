@@ -1,28 +1,31 @@
-name: Update X Impressions to Google Sheets
+name: Update Impressions
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 毎日00:00（UTC）に実行
-  workflow_dispatch:  # 手動で実行も可能
+    - cron: '0 0 * * *'  # 毎日0時0分に実行
+  workflow_dispatch:  # 手動で実行するオプションを追加
 
 jobs:
   update_impressions:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'  # 必要なPythonのバージョンを指定
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt  # requirements.txtから依存関係をインストール
 
-      - name: Run the script
-        run: |
-          python update_impressions.py
+    - name: Run script to update impressions
+      env:
+        BEARER_TOKEN: ${{ secrets.BEARER_TOKEN }}  # GitHub Secretsから取得
+        GOOGLE_API_CREDENTIALS: ${{ secrets.GOOGLE_API_CREDENTIALS }}  # GitHub Secretsから取得
+        GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}  # GitHub Secretsから取得
+      run: |
+        python update_impressions.py  # Pythonスクリプトを実行

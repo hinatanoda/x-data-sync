@@ -25,10 +25,14 @@ client_gspread = gspread.authorize(credentials)
 # Googleスプレッドシートの取得
 sheet = client_gspread.open_by_key(SHEET_ID).sheet1  # 1番目のシートを選択
 
-# Xのアカウント情報を使ってインプレッション数を取得
+# ユーザー名からuser_idを取得
 username = 'waav_king'  # 自分のXアカウントのユーザー名
-user = client.get_user(username=username)  # ユーザー情報を取得
-user_id = user.id  # 正しいuser_idを取得
+response = client.get_user(username=username)  # ユーザー情報を取得
+
+# 正しいuser_idを取得
+user_id = response.data.id  # data属性内にidが含まれています
+
+print(f'User ID: {user_id}')  # 取得したuser_idを表示
 
 # Xのアカウント情報を使ってインプレッション数を取得
 tweets = client.get_users_tweets(user_id, tweet_fields=["public_metrics"])

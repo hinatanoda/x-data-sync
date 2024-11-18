@@ -35,35 +35,35 @@ user_id = response.data.id  # data属性内にidが含まれています
 
 print(f'User ID: {user_id}')  # 取得したuser_idを表示
 
-# Xのアカウント情報を使ってインプレッション数を取得
-tweets = client.get_users_tweets(user_id, tweet_fields=["public_metrics", "text"])
+# Xのアカウント情報を使って直近5件の投稿データを取得
+tweets = client.get_users_tweets(user_id, tweet_fields=["public_metrics", "text"], max_results=5)
 
 # 現在の日付を取得
 today_date = datetime.now().strftime('%Y-%m-%d')
 
-# スプレッドシートに日付列を追加
+# スプレッドシートのヘッダー行を取得し、日付列を確認・追加
 header_row = sheet.row_values(1)  # 最初の行（ヘッダー行）を取得
 if today_date not in header_row:
     sheet.update_cell(1, len(header_row) + 1, today_date)  # 新しい列を追加
 
-# 最も最近のツイートのインプレッション数を取得
+# 各ツイートの投稿文とインプレッション数を反映
 if tweets.data is not None:
-    for tweet in tweets.data:
+    total_impressions = 0
+    column_index = len(header_row) + 1  # 新しい日付列のインデックス
+    row_offset = 2  # データ開始位置（2行目から）
+
+    for i, tweet in enumerate(tweets.data):
         tweet_text = tweet.text
         impressions = tweet.public_metrics['impression_count']
+        total_impressions += impressions
 
-        # 投稿本文を既存データから探すか、新規追加
-        all_rows = sheet.get_all_values()
-        found = False
-        for row_index, row in enumerate(all_rows[1:], start=2):  # 2行目以降を走査
-            if row[0] == tweet_text:  # 投稿本文が一致
-                found = True
-                sheet.update_cell(row_index, len(header_row) + 1, impressions)  # 対応する行にインプレッション数を更新
-                break
+        # 投稿文とインプレッション数をスプレッドシートに記録
+        sheet.update_cell(row_offset + i, column_index, tweet_text)  # 投稿文
+        sheet.update_cell(row_offset + i, column_index + 1, impressions)  # インプレッション数
 
-        # 新規ツイートの場合、最終行に追加
-        if not found:
-            new_row = [tweet_text] + [''] * (len(header_row) - 1) + [impressions]
-            sheet.append_row(new_row)
+    # 合計インプレッション数を最下行に追加
+    sheet.update_cell(row_offset + len(tweets.data), column_index, "合計インプレッション数")
+    sheet.update_cell(row_offset + len(tweets.data), column_index + 1, total_impressions)
+
 else:
     print("No tweets found or error in API response.")

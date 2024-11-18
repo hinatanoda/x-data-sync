@@ -36,7 +36,7 @@ user_id = response.data.id  # data属性内にidが含まれています
 print(f'User ID: {user_id}')  # 取得したuser_idを表示
 
 # Xのアカウント情報を使って直近5件の投稿データを取得
-tweets = client.get_users_tweets(user_id, tweet_fields=["public_metrics", "text"], max_results=100)
+tweets = client.get_users_tweets(user_id, tweet_fields=["public_metrics", "text"], max_results=5)
 
 # 現在の日付を取得
 today_date = datetime.now().strftime('%Y-%m-%d')

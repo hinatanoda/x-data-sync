@@ -1,8 +1,9 @@
 import tweepy
 import gspread
-from google.oauth2.service_account import Credentials  # oauth2clientからgoogle.oauth2に変更
+from google.oauth2.service_account import Credentials
 import os
 import json
+from datetime import datetime
 
 # 環境変数からGoogle Sheetsの認証情報を取得
 google_credentials = json.loads(os.getenv('GOOGLE_API_CREDENTIALS'))  # JSON文字列を辞書に変換
@@ -35,16 +36,34 @@ user_id = response.data.id  # data属性内にidが含まれています
 print(f'User ID: {user_id}')  # 取得したuser_idを表示
 
 # Xのアカウント情報を使ってインプレッション数を取得
-tweets = client.get_users_tweets(user_id, tweet_fields=["public_metrics"])
+tweets = client.get_users_tweets(user_id, tweet_fields=["public_metrics", "text"])
 
-# レスポンスを確認
-print(f"API Response: {tweets}")
+# 現在の日付を取得
+today_date = datetime.now().strftime('%Y-%m-%d')
+
+# スプレッドシートに日付列を追加
+header_row = sheet.row_values(1)  # 最初の行（ヘッダー行）を取得
+if today_date not in header_row:
+    sheet.update_cell(1, len(header_row) + 1, today_date)  # 新しい列を追加
 
 # 最も最近のツイートのインプレッション数を取得
 if tweets.data is not None:
     for tweet in tweets.data:
+        tweet_text = tweet.text
         impressions = tweet.public_metrics['impression_count']
-        # Googleスプレッドシートにインプレッション数を反映
-        sheet.append_row([tweet.id, impressions])
+
+        # 投稿本文を既存データから探すか、新規追加
+        all_rows = sheet.get_all_values()
+        found = False
+        for row_index, row in enumerate(all_rows[1:], start=2):  # 2行目以降を走査
+            if row[0] == tweet_text:  # 投稿本文が一致
+                found = True
+                sheet.update_cell(row_index, len(header_row) + 1, impressions)  # 対応する行にインプレッション数を更新
+                break
+
+        # 新規ツイートの場合、最終行に追加
+        if not found:
+            new_row = [tweet_text] + [''] * (len(header_row) - 1) + [impressions]
+            sheet.append_row(new_row)
 else:
     print("No tweets found or error in API response.")

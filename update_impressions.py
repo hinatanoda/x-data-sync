@@ -36,7 +36,7 @@ user_id = response.data.id  # data属性内にidが含まれています
 print(f'User ID: {user_id}')  # 取得したuser_idを表示
 
 # Xのアカウント情報を使って直近5件の投稿データを取得
-tweets = client.get_users_tweets(user_id, tweet_fields=["public_metrics", "text"], max_results=5)
+tweets = client.get_users_tweets(user_id, tweet_fields=["public_metrics", "text"], max_results=100)
 
 # 現在の日付を取得
 today_date = datetime.now().strftime('%Y-%m-%d')
@@ -58,12 +58,12 @@ if tweets.data is not None:
         total_impressions += impressions
 
         # 投稿文とインプレッション数をスプレッドシートに記録
-        sheet.update_cell(row_offset + i, column_index, tweet_text)  # 投稿文
-        sheet.update_cell(row_offset + i, column_index + 1, impressions)  # インプレッション数
+        sheet.update_cell(1+row_offset + i, column_index, tweet_text)  # 投稿文
+        sheet.update_cell(1+row_offset + i, column_index + 1, impressions)  # インプレッション数
 
-    # 合計インプレッション数を最下行に追加
-    sheet.update_cell(row_offset + len(tweets.data), column_index, "合計インプレッション数")
-    sheet.update_cell(row_offset + len(tweets.data), column_index + 1, total_impressions)
+    # 合計インプレッション数を最上行に追加
+    sheet.update_cell(1, column_index, "合計インプレッション数")
+    sheet.update_cell(1, column_index + 1, total_impressions)
 
 else:
     print("No tweets found or error in API response.")

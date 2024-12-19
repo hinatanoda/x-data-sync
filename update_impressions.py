@@ -24,7 +24,7 @@ client = tweepy.Client(bearer_token=BEARER_TOKEN)
 client_gspread = gspread.authorize(credentials)
 
 # Googleスプレッドシートの取得
-sheet = client_gspread.open_by_key(SHEET_ID).sheet1  # 1番目のシートを選択
+sheet = client_gspread.open_by_key(SHEET_ID).X分析シート  # 1番目のシートを選択
 
 # ユーザー名からuser_idを取得
 username = 'waav_king'  # 自分のXアカウントのユーザー名
